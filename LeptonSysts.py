@@ -22,7 +22,8 @@ year = "2022"
 
 if (year=="2022"):
    lumi= 7.98
-   folder = '/eos/user/m/mmanoni/HZZ_prod_031125_22_23/2022_MC/PROD_samplesNano_2022_MC_a3d06bb6/'
+   #folder = '/eos/cms/store/group/phys_higgs/cmshzz4l/cjlst/HIG-25-015/RunIII_byZ1Z2/031125/2023preBPix_MC/'
+   folder='/eos/user/m/mmanoni/HZZ_prod_031125_22_23/2022_MC/PROD_samplesNano_2022_MC_a3d06bb6/'
    #'/eos/cms/store/group/phys_higgs/cmshzz4l/cjlst/HIG-24-013/RunIII_byZ1Z2/240820/2022/'#
    #"/eos/cms/store/group/phys_higgs/cmshzz4l/cjlst/HIG-25-015/RunIII_byZ1Z2/031125/2022_MC/" # Define input folder name
 #file_name = '/ZZ4lAnalysis_SKIMMED.root' # Define input file name
@@ -32,7 +33,7 @@ file_name = '/ZZ4lAnalysis_LepSyst.root'
 
 # Flags to control uncertainty treatment
 correlated_leptons = True     # treat lepton SF uncertainties as correlated across all 4 leptons
-uncorrelated_leptons = False   # treat lepton SF uncertainties as independent (quadrature sum)
+uncorrelated_leptons = True   # treat lepton SF uncertainties as independent (quadrature sum)
 corr_factor = 0               # correlation coefficient (ρ = 0 means no correlation)
 
 # List of samples to run on
@@ -62,6 +63,25 @@ def sigma_event(rho, SF1, SF2, SF3, SF4, sigma1, sigma2, sigma3, sigma4):
    else:
       return rez
 
+'''
+def sigma_event(rho, SF1, SF2, SF3, SF4, sigma1, sigma2, sigma3, sigma4):
+    SF = [SF1, SF2, SF3, SF4]
+    sigma = [sigma1, sigma2, sigma3, sigma4]
+
+    # evita divisione per zero
+    valid = [(s, e) for s, e in zip(SF, sigma) if s != 0]
+
+    if not valid:
+        return 0.0
+
+    rez = 0.0
+    for i in range(len(valid)):
+        rez += (valid[i][1] / valid[i][0]) ** 2
+        for j in range(i+1, len(valid)):
+            rez += 2 * rho * (valid[i][1] * valid[j][1]) / (valid[i][0] * valid[j][0])
+
+    return rez
+'''
 ################################################################################
 # LOOP OVER SAMPLES
 ################################################################################
@@ -86,15 +106,15 @@ for Type in List:
 
    # Compute nominal event yields for each channel (4e, 4μ, 2e2μ)
    # Each Draw applies a selection and fills the histogram
-   tree.Draw("ZZMass >> h_nom" , "(abs(LepLepId[0]) == 11 && abs(LepLepId[3]) == 11)*overallEventWeight*1000*"+str(lumi)+"/"+str(NGen))
+   tree.Draw("ZZMass >> h_nom" , "(abs(LepLepId[0]) == 11 && abs(LepLepId[3]) == 11)*overallEventWeight*dataMCWeight*1000*"+str(lumi)+"/"+str(NGen))
    nom_yield_4e = h_nom.Integral()
    print("nom_yield_4e", nom_yield_4e)
    
-   tree.Draw("ZZMass >> h_nom" , "(abs(LepLepId[0]) == 13 && abs(LepLepId[3]) == 13)*overallEventWeight*1000*"+str(lumi)+"/"+str(NGen))
+   tree.Draw("ZZMass >> h_nom" , "(abs(LepLepId[0]) == 13 && abs(LepLepId[3]) == 13)*overallEventWeight*dataMCWeight*1000*"+str(lumi)+"/"+str(NGen))
    nom_yield_4mu = h_nom.Integral()
    print("nom_yield_4mu", nom_yield_4mu)
    
-   tree.Draw("ZZMass >> h_nom" , "(abs(abs(LepLepId[0]) - (LepLepId[3])) == 2)*overallEventWeight*1000*"+str(lumi)+"/"+str(NGen))
+   tree.Draw("ZZMass >> h_nom" , "(abs(abs(LepLepId[0]) - (LepLepId[3])) == 2)*overallEventWeight*dataMCWeight*1000*"+str(lumi)+"/"+str(NGen))
    nom_yield_2e2mu = h_nom.Integral()
    print("nom_yield_2e2mu", nom_yield_2e2mu)
 
@@ -152,11 +172,11 @@ for Type in List:
       elif (abs(idL1-idL3)==2):
          br_fs2e2mu += 1
       
-      # Calculate nominal weigh using central value of SF
-      weight_nom = event.overallEventWeight * 1000 * lumi / NGen #xsec is already inside overallEventWeight --- what about L1prefiringWeight?
-      
       # Nominal value of total SF, product of 4 lepton nominal SF
       SF_tot_nom = event.dataMCWeight
+
+      # Calculate nominal weigh using central value of SF
+      weight_nom = event.overallEventWeight * 1000 * SF_tot_nom * lumi / NGen #xsec is already inside overallEventWeight --- what about L1prefiringWeight?
       
       SF_lep_trig = []
       err_lep_trig_up = []
