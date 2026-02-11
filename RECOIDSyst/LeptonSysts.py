@@ -26,7 +26,7 @@ gRandom.SetSeed(101)
 # ANALYSIS CONFIGURATION
 ################################################################################
 
-year = "2024"
+year = "2022"
 
 if (year=="2022"):
    lumi= 7.98
@@ -61,13 +61,8 @@ elif (year == "2024"):
    lumi= 108.822
 
    folder = '/eos/user/m/mmanoni/SKIMMED_syst_final/'
-   file_name = '/ZZ4lAnalysis_SKIMMED_idx_new.root'
+   file_name = '/final_2024.root'
    List = ['2024']
-
-   #folder='/eos/user/m/mmanoni/prod_ggH/'
-   #file_name = '/2024_skimmed.root'
-
-   #List = ['2022']
 
 else:
    raise ValueError(f"Unknown year: {year}")
@@ -193,7 +188,6 @@ for Type in List:
 
    for event in range(nEvents):
       tree.GetEntry(event)
-      #print("event", event)
 
       # RESET EVERY EVENT — no exceptions
       SF_lep       = [0., 0., 0., 0.]
@@ -204,35 +198,14 @@ for Type in List:
       err_lep_trig_up   = [0., 0., 0., 0.]
       err_lep_trig_dn   = [0., 0., 0., 0.]
 
-
-   #for event in tree:
-      # Loop over all events in tree
-      #print("--------------------Event-----------------------:", event)
-      #print("tree.LepLepId:", tree.LepLepId)
-      #print("Event.LepLepId:", event.LepLepId)
-      
-
-      '''print("Electron_SF array length:", len(event.Electron_SF))
-      print("Muon_SF array length:", len(event.Muon_SF))
-      print("Muon_SFUnc array length:", len(event.Muon_SFUnc))
-      print("event.Muon_SF", event.Muon_SF)
-      print("event.Muon_SFUnc", event.Muon_SFUnc)
-      print("event.Ele_SF", event.Electron_SF)
-      print("event.Ele_SFUnc", event.Electron_SFUnc)'''
       br_data+=1
-      #print("Event counter", br_data)
-      #print("event.Muon_SF ", tree.Muon_SF)
-      #print("event.Ele_SF ", tree.Electron_SF)
       
       mass4l = tree.ZZMass
       if( mass4l < 105. or mass4l >140.): continue # Skip events that are not in the mass window
 
       # Identify final state based on lepton IDs
       idL1 = abs(tree.LepLepId[0])
-      #print('idL1',idL1)
-
       idL3 = abs(tree.LepLepId[3])
-      #print('idL3',idL3)
 
       # Increment counters for each final state
       if (idL1==11 and idL3==11):
@@ -247,33 +220,7 @@ for Type in List:
 
       # Calculate nominal weigh using central value of SF
       weight_nom = tree.overallEventWeight * 1000 * SF_tot_nom * lumi / NGen #xsec is already inside overallEventWeight --- what about L1prefiringWeight?
-      #print("weight_nom: ", weight_nom)
-
-      '''SF_lep_trig = []
-      err_lep_trig_up = []
-      err_lep_trig_dn = []
-
-      SF_lep = []
-      err_lep_up = []
-      err_lep_dn = []'''
-      
-      #for i in range (0,4):
-         # print(err_lep_trig_dn)
-            #SF_lep_trig.append(0.)
-         # err_lep_trig_up.append(0.)
-         # err_lep_trig_dn.append(0.)
-     
-         #SF_lep = [0., 0., 0., 0.]
-         #err_lep_up = [0., 0., 0., 0.]
-         #err_lep_dn = [0., 0., 0., 0.]
-
-         #SF_lep_trig = [1., 1., 1., 1.]
-         #err_lep_trig_up = [0., 0., 0., 0.]
-         #err_lep_trig_dn = [0., 0., 0., 0.]
-
-      elec_idx = 0
-      muon_idx = 0
-         
+ 
       for i in range (0,4):
          # Hard-coded trigger SF and unc (Since Run2)
          err_lep_trig_dn = [0.01,0,0,0]
@@ -304,47 +251,17 @@ for Type in List:
          if(abs(idL1-idL3)==2 and tree.LepPt[3] >= 12):
                err_lep_trig_up = [0.001,0,0,0]
                err_lep_trig_dn = [0.01,0,0,0]
-       
-         # Load reco and selection SF and unc
-         # for electrons, reconstrucion SF unc and HZZ selection SF unc are combined and provided in the branch stored in our NTuple;
-         # print(err_lep_trig_up)
-
-         #print(tree.LepLepId)
-
-         elec_idx = 0
-         muon_idx = 0
-         n_leptons = len(tree.LepLepId)
-
-         #for i in range(n_leptons):
+      
          if abs(tree.LepLepId[i]) == 11:
-            #print("event.Electron_SF: ", tree.Electron_SF)
+
             SF_lep[i] = tree.LepSF[i]
             err_lep_up[i] = tree.LepSFUnc[i]
             err_lep_dn[i] = tree.LepSFUnc[i]
-            #elec_idx += 1
+
          elif abs(tree.LepLepId[i]) == 13:
             SF_lep[i] = tree.LepSF[i]
             err_lep_up[i] = tree.LepSFUnc[i]
             err_lep_dn[i] = tree.LepSFUnc[i]
-            #muon_idx += 1
-
-            #print("----------------------------------------------")
-            #print("event.Electron_SF: ", tree.Muon_SF)
-            #print("MUO SF: ", SF_lep) 
-            #print("err_lep_up", err_lep_up)
-            #print("err_lep_dn", err_lep_dn)
-
-            #print("event.Muon_SF ", tree.Muon_SF)
-            #print("MUO SF: ", SF_lep, "err_lep_up", err_lep_up, "err_lep_dn", err_lep_dn)
-      '''print("--------------------------------------------------")
-      print("Event summary")
-      print("LepLepId:", list(tree.LepLepId))
-      print("Electron_SF (raw):", list(tree.Electron_SF))
-      print("Muon_SF     (raw):", list(tree.Muon_SF))
-      print("SF_lep (ordered):", SF_lep)
-      print("err_lep_up:", err_lep_up)
-      print("err_lep_dn:", err_lep_dn)
-      print("--------------------------------------------------")'''
       
       for i in range(4):
 
@@ -354,36 +271,6 @@ for Type in List:
             (abs(tree.LepLepId[i]) == 13 and tree.LepPt[i] >= 5  and tree.LepPt[i] <= 120) or
             (abs(tree.LepLepId[i]) == 11 and tree.LepPt[i] >= 7  and tree.LepPt[i] <= 500)
          )
-
-         # Print only when SF_lep == 1 AND the lepton fails eta or pt
-         '''if SF_lep[i] == 1 and ( eta_ok or pt_ok):
-
-            print("Lepton info:")
-            print(f"tree #: {br_data}")
-            print(f"Iterationent #: {i}") 
-            print("tree.LepLepId:", tree.LepLepId)
-            print(f"  Lep ID   = {tree.LepLepId[i]} ({'electron' if abs(tree.LepLepId[i])==11 else 'muon'})")
-            print(f"  Lep Pt   = {tree.LepPt[i]:.3f} GeV")
-            print(tree.LepEta)
-            print(f"  Lep Eta  = {tree.LepEta[i]:.3f}")
-            print(f"  Lep Phi  = {tree.LepPhi[i]:.3f}")
-            print(f"  SF_lep   = {SF_lep[i]:.6f}")
-            print(f"  SF up    = {err_lep_up[i]:.6f}")
-            print(f"  SF down  = {err_lep_dn[i]:.6f}")
-
-            print(f"  Full Eta: {getattr(tree, 'LepEta', 'N/A')}")
-            print(f"  Full Pt    : {getattr(tree, 'LepPt', 'N/A')}")
-
-            print(f"  Full Electron_SF array: {getattr(tree, 'Electron_SF', 'N/A')}")
-            print(f"  Full Muon_SF array    : {getattr(tree, 'Muon_SF', 'N/A')}")
-            print(f"  Full SF_lep array     : {SF_lep}")
-            print(f"  elec_idx / muon_idx   : {elec_idx} / {muon_idx}")
-
-            # Debug: show why it triggered
-            print(f"  eta_ok = {eta_ok}, pt_ok = {pt_ok}")
-
-            print("========================================\n")
-         '''
 
       for k in range (0,2):
          # Calculate each variation independently
@@ -407,15 +294,7 @@ for Type in List:
             for i in range (0,4):
                if (correlated_leptons ):
                   SF_var_up *= (SF_lep_trig[i] + TRIG*err_lep_trig_up[i]) * (SF_lep[i] + RECO_SEL*err_lep_up[i])
-                  #print("SF_var_up", SF_var_up)
                   SF_var_dn *= (SF_lep_trig[i] - TRIG*err_lep_trig_dn[i]) * (SF_lep[i] - RECO_SEL*err_lep_dn[i])
-                  #print("SF_var_dn", SF_var_dn)
-
-                  #sf_ratio2 = (err_lep_up[i] / SF_lep[i])**2
-                  #plot_Pt.append(tree.LepPt[i])
-                  #plot_Eta.append(tree.LepEta[i])
-                  #plot_sf_ratio2.append(sf_ratio2)
-                  #print(f"Lepton {i}: Pt = {tree.LepPt[i]}, Eta = {tree.LepEta[i]}, (err/SF)^2 = {sf_ratio2}")
            
             if (uncorrelated_leptons):
                #print("here")
@@ -431,31 +310,9 @@ for Type in List:
                   plot_Pt.append(tree.LepPt[i])
                   plot_Eta.append(tree.LepEta[i])
                   plot_sf_ratio2.append(sf_ratio2)
-                  #print(f"Lepton {i}: Pt = {tree.LepPt[i]}, Eta = {tree.LepEta[i]}, (err/SF)^2 = {sf_ratio2}")
+                  
 
-               #print("RECO_SEL", RECO_SEL)
-               #print(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_up[0],err_lep_up[1],err_lep_up[2],err_lep_up[3])
-               #print(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_up[0],err_lep_up[1],err_lep_up[2],err_lep_up[3]))
-               #print("trig",sigma_event(corr_factor,SF_lep_trig[0],SF_lep_trig[1],SF_lep_trig[2],SF_lep_trig[3],err_lep_trig_up[0],err_lep_trig_up[1],err_lep_trig_up[2],err_lep_trig_up[3]))
-               #print("trig factors", corr_factor,SF_lep_trig[0],SF_lep_trig[1],SF_lep_trig[2],SF_lep_trig[3],err_lep_trig_up[0],err_lep_trig_up[1],err_lep_trig_up[2],err_lep_trig_up[3])
-               #print("uncor_4e_up 0", uncor_4e_up[0])
-               #print("uncor_4e_up 1", uncor_4e_up[1])
                uncor_4e_dn[k] += TRIG*(sigma_event(corr_factor,SF_lep_trig[0],SF_lep_trig[1],SF_lep_trig[2],SF_lep_trig[3],err_lep_trig_dn[0],err_lep_trig_dn[1],err_lep_trig_dn[2],err_lep_trig_dn[3])) + RECO_SEL*(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_dn[0],err_lep_dn[1],err_lep_dn[2],err_lep_dn[3])) 
-
-               '''if any(sf < 0.5 for sf in SF_lep):
-                  print("⚠️ WARNING: SF_lep below 0.6 detected")
-                  print(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_up[0],err_lep_up[1],err_lep_up[2],err_lep_up[3]))
-                  print(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_up[0],err_lep_up[1],err_lep_up[2],err_lep_up[3])
-                  print("Lepton SFs:", SF_lep)
-                  print("Lepton SF uncertainties (up):", err_lep_up)
-                  print("Lepton SF uncertainties (down):", err_lep_dn)
-                  print("Trigger SFs:", SF_lep_trig)
-                  print("Trigger SF uncertainties (up):", err_lep_trig_up)
-                  print("Trigger SF uncertainties (down):", err_lep_trig_dn)
-                  print("TRIG =", TRIG, "RECO_SEL =", RECO_SEL)
-                  print("corr_factor =", corr_factor)
-                  print("uncor_4e_up 0", uncor_4e_up[0])
-                  print("uncor_4e_up 1", uncor_4e_up[1])'''
                
             yield_4e_up[k] += weight_nom/SF_tot_nom * SF_var_up
             yield_4e_dn[k] += weight_nom/SF_tot_nom * SF_var_dn
@@ -467,27 +324,9 @@ for Type in List:
                   SF_var_up *= (SF_lep_trig[i] + TRIG*err_lep_trig_up[i]) * (SF_lep[i] + RECO_SEL*err_lep_up[i])
                   SF_var_dn *= (SF_lep_trig[i] - TRIG*err_lep_trig_dn[i]) * (SF_lep[i] - RECO_SEL*err_lep_dn[i])
             if (uncorrelated_leptons):
-               #print("here")
-               uncor_4mu_up[k] += TRIG*(sigma_event(corr_factor,SF_lep_trig[0],SF_lep_trig[1],SF_lep_trig[2],SF_lep_trig[3],err_lep_trig_up[0],err_lep_trig_up[1],err_lep_trig_up[2],err_lep_trig_up[3])) + RECO_SEL*(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_up[0],err_lep_up[1],err_lep_up[2],err_lep_up[3]))
-               '''if (RECO_SEL*(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_up[0],err_lep_up[1],err_lep_up[2],err_lep_up[3])) > 0.2):
-                  print("RECO DEL", RECO_SEL*(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_up[0],err_lep_up[1],err_lep_up[2],err_lep_up[3])))
-                  print("corr_factor", corr_factor)
-                  print("SF_lep[0]", SF_lep[0])
-                  print("SF_lep[1]", SF_lep[1])
-                  print("SF_lep[2]", SF_lep[2])
-                  print("SF_lep[3]", SF_lep[3])
 
-                  print("err_lep_up[0]", err_lep_up[0])
-                  print("err_lep_up[1]",err_lep_up[1])
-                  print("err_lep_up[2]", err_lep_up[2])
-                  print("err_lep_up[3]", err_lep_up[3])'''
-               uncor_4mu_dn[k] += TRIG*(sigma_event(corr_factor,SF_lep_trig[0],SF_lep_trig[1],SF_lep_trig[2],SF_lep_trig[3],err_lep_trig_dn[0],err_lep_trig_dn[1],err_lep_trig_dn[2],err_lep_trig_dn[3])) + RECO_SEL*(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_dn[0],err_lep_dn[1],err_lep_dn[2],err_lep_dn[3]))
+               uncor_4mu_up[k] += TRIG*(sigma_event(corr_factor,SF_lep_trig[0],SF_lep_trig[1],SF_lep_trig[2],SF_lep_trig[3],err_lep_trig_up[0],err_lep_trig_up[1],err_lep_trig_up[2],err_lep_trig_up[3])) + RECO_SEL*(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_up[0],err_lep_up[1],err_lep_up[2],err_lep_up[3]))
                uncor_4mu_dn[k] += TRIG*(sigma_event(corr_factor,SF_lep_trig[0],SF_lep_trig[1],SF_lep_trig[2],SF_lep_trig[3],err_lep_trig_dn[0],err_lep_trig_dn[1],err_lep_trig_dn[2],err_lep_trig_dn[3])) + RECO_SEL*(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_dn[0],err_lep_dn[1],err_lep_dn[2],err_lep_dn[3])) 
-               
-               SF_sigma_4mu_0.append((err_lep_up[0] / SF_lep[0])**2)
-               SF_sigma_4mu_1.append((err_lep_up[1] / SF_lep[1])**2)
-               SF_sigma_4mu_2.append((err_lep_up[2] / SF_lep[2])**2)
-               SF_sigma_4mu_3.append((err_lep_up[3] / SF_lep[3])**2)
 
                for i in range(4):
                   sf_ratio2 = (err_lep_up[i] / SF_lep[i])**2
@@ -495,21 +334,6 @@ for Type in List:
                      plot_Pt_mu.append(tree.LepPt[i])
                      plot_Eta_mu.append(tree.LepEta[i])
                      plot_sf_ratio2_mu.append(sf_ratio2)
-                     #print(f"Lepton {i}: Pt = {tree.LepPt[i]}, Eta = {tree.LepEta[i]}, (err/SF)^2 = {sf_ratio2}, err_lep_up[i] = {err_lep_up[i]},SF_lep[i] = {SF_lep[i]} ")
-
-               '''if any(sf < 0.95 for sf in SF_lep):
-                  print("⚠️ WARNING: SF_lep below 0.6 detected")
-                  print(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_up[0],err_lep_up[1],err_lep_up[2],err_lep_up[3]))
-                  print("Lepton SFs:", SF_lep)
-                  print("Lepton SF uncertainties (up):", err_lep_up)
-                  print("Lepton SF uncertainties (down):", err_lep_dn)
-                  print("Trigger SFs:", SF_lep_trig)
-                  print("Trigger SF uncertainties (up):", err_lep_trig_up)
-                  print("Trigger SF uncertainties (down):", err_lep_trig_dn)
-                  print("TRIG =", TRIG, "RECO_SEL =", RECO_SEL)
-                  print("corr_factor =", corr_factor)
-                  print("uncor_4mu_up 0", uncor_4e_up[0])
-                  print("uncor_4mu_up 1", uncor_4e_up[1])'''
 
             yield_4mu_up[k] += weight_nom/SF_tot_nom * SF_var_up
             yield_4mu_dn[k] += weight_nom/SF_tot_nom * SF_var_dn
@@ -526,20 +350,9 @@ for Type in List:
                
                if (uncorrelated_leptons):
 
-                  '''print("SF_lep[0]", SF_lep[0])
-                  print("SF_lep[1]", SF_lep[1])
-                  print("SF_lep[2]", SF_lep[2])
-                  print("SF_lep[3]", SF_lep[3])'''
-                  #print("ciao")
                   uncor_2e2mu_e_up[k] += TRIG*(sigma_event(corr_factor,SF_lep_trig[0],SF_lep_trig[1],SF_lep_trig[2],SF_lep_trig[3],err_lep_trig_up[0],err_lep_trig_up[1],0,0)) + RECO_SEL*(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_up[0],err_lep_up[1],0,0))
-                  #print("ciao 1")
-
-                  
-                  
                   uncor_2e2mu_e_dn[k] += TRIG*(sigma_event(corr_factor,SF_lep_trig[0],SF_lep_trig[1],SF_lep_trig[2],SF_lep_trig[3],err_lep_trig_dn[0],err_lep_trig_dn[1],0,0)) + RECO_SEL*(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],err_lep_dn[0],err_lep_dn[1],0,0))
-                  #print("ciao 2")
                   uncor_2e2mu_mu_up[k] += TRIG*(sigma_event(corr_factor,SF_lep_trig[0],SF_lep_trig[1],SF_lep_trig[2],SF_lep_trig[3],0,0,err_lep_trig_up[2],err_lep_trig_up[3])) + RECO_SEL*(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],0,0,err_lep_up[2],err_lep_up[3]))
-                  #print("ciao 3")
                   uncor_2e2mu_mu_dn[k] += TRIG*(sigma_event(corr_factor,SF_lep_trig[0],SF_lep_trig[1],SF_lep_trig[2],SF_lep_trig[3],0,0,err_lep_trig_dn[2],err_lep_trig_dn[3])) + RECO_SEL*(sigma_event(corr_factor,SF_lep[0],SF_lep[1],SF_lep[2],SF_lep[3],0,0,err_lep_dn[2],err_lep_dn[3]))
             
             elif ( idL1 == 13):
@@ -599,12 +412,10 @@ for Type in List:
          
       if (uncorrelated_leptons):
          comb_uncor_4e_up += (uncor_4e_up[k]/br_fs4e)
-         #print("uncor_4e_up[k]", uncor_4e_up[k])
-         #print('br_fs4e',br_fs4e)
          comb_uncor_4mu_up += (uncor_4mu_up[k]/br_fs4mu)
 
-         print("uncor_4mu_up[k]", uncor_4mu_up[k])
-         print('br_fs4mu',br_fs4mu)
+         #print("uncor_4mu_up[k]", uncor_4mu_up[k])
+         #print('br_fs4mu',br_fs4mu)
          #print("comb_uncor_4mu_up", comb_uncor_4mu_up)
 
          comb_uncor_2e2mu_e_up += (uncor_2e2mu_e_up[k]/br_fs2e2mu)
